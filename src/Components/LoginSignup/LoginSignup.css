@@ -1,0 +1,124 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    margin-top: 30px;
+    background: white;
+    padding-bottom: 40px;
+    width: 500px;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 20px;
+    width: 100%;
+}
+
+.header img {
+    width: 150px;
+    height: 170px;
+}
+
+.text {
+    font-size: 30px;
+    font-weight: 600;
+    color: #001d53;
+}
+
+.underline {
+    width: 60px;
+    height: 5px;
+    background: #001d53;
+    border-radius: 10px;
+}
+
+.inputs {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 50px;
+    gap: 20px;
+}
+
+.input {
+    display: flex;
+    align-items: center;
+    margin: auto;
+    width: 400px;
+    height: 65px;
+    background: rgb(214, 211, 216);
+    border-radius: 6px;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.input img {
+    width: 19px;
+    height: 16px;
+    margin: 0px 20px;
+}
+
+.input input {
+    width: 400px;
+    height: 50px;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 20px;
+    font-weight: 500;
+    color: #001d53;
+}
+
+.submit-container {
+    display: block;
+    justify-content: space-between;
+    margin: 20px ;
+    width: 480px;
+}
+
+.submit-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 400px;
+    height: 60px;
+    background: linear-gradient( #001d53, #2f005c);
+    border-radius: 50px;
+    font-size: 20px;
+    font-weight: 700;
+    color: rgb(226, 210, 236);
+    cursor: pointer;
+    margin: auto;
+}
+
+.gray {
+    background: rgb(214, 211, 216);
+    color: #001d53;
+}
+
+.switch-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+    font-weight: bold;
+    color: #2f005c;
+}
+
+.forgot-password {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+    font-weight: bold;
+    color: #2f005c;
+}

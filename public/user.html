@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Page</title>
+  <link rel="stylesheet" href="user.css" />
+</head>
+
+<body>
+  <div class="container">
+    <img src="https://via.placeholder.com/200" alt="Sample Image" id="imagePlaceholder" />
+    <br />
+    <button id="getImageBtn">Get Image</button>
+    <div id="dropdown-container">
+      <select id="dropdown1"></select>
+      <select id="dropdown2"></select>
+      <select id="dropdown3"></select>
+    </div>
+    <button id="submitAnswerBtn">Submit Answer</button>
+    <br />
+    <button id="getHintBtn">Get Hint</button>
+    <br />
+    <div id="hintArea" class="hidden"></div>
+    
+    <p id="userInfo"></p>
+    <p id="remainingTokens">Remaining Tokens</p>
+    <p id="lastGuess">Previous Guess</p>
+    <p id="numCorrect">Number of Correct Words</p>
+    <button id="signOutBtn">Signout</button>
+  </div>
+  <script defer>
+    document.getElementById("getHintBtn").disabled = true;
+    document.getElementById("submitAnswerBtn").disabled = true;
+    const xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        let json = JSON.parse(xhr.responseText);
+        console.log(xhr.responseText);
+        document.getElementById("remainingTokens").innerHTML = "Remaining Tokens: " + json.tokens;
+
+      }
+    };
+    xhr.withCredentials = true;
+    xhr.open("GET", "https://isa-server.azurewebsites.net/user/tokens", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send();
+    // JavaScript to handle the showing/hiding of the hint area
+    document
+      .getElementById("getHintBtn")
+      .addEventListener("click", function () {
+        document.getElementById("hintArea").classList.toggle("hidden");
+      });
+    document
+      .getElementById("getImageBtn")
+      .addEventListener("click", function () {
+        let hintArea = document.getElementById("hintArea");
+        if (!hintArea.classList.contains("hidden")) {
+          hintArea.classList.toggle("hidden");
+        }
+        document.getElementById("submitAnswerBtn").disabled = false;
+        document.getElementById("imagePlaceholder").src = "images/loading-white.gif";
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true; // Send cookies with the request
+        document.getElementById("getImageBtn").disabled = true;
+        // Configure it to make a GET request to the server endpoint
+        xhr.open("GET", "https://isa-server.azurewebsites.net/getImage", true);
+
+        // Set the response type to 'blob'
+
+        // Set up a callback function to handle the response
+        xhr.onload = function () {
+          document.getElementById("getImageBtn").disabled = false;
+          document.getElementById("getHintBtn").disabled = false;
+          document.getElementById("userInfo").innerHTML = "";
+          if (xhr.status >= 200 && xhr.status < 300) {
+            // Convert the received data to a data URL
+            const json = JSON.parse(xhr.responseText);
+            const uint8Array = new Uint8Array(json.image.data);
+            const blob = new Blob([uint8Array], { type: "image/jpeg" });
+
+            const imageUrl = URL.createObjectURL(blob);
+
+            console.log(json.animals, json.transports, json.actions);
+            populateDropdown("dropdown1", json.animals);
+            populateDropdown("dropdown2", json.transports);
+            populateDropdown("dropdown3", json.actions);
+
+            // Update the src attribute of the img element
+            document.getElementById("imagePlaceholder").src = imageUrl;
+          } else {
+            console.error("Error:", xhr.statusText);
+          }
+        };
+
+        // Set up error handling
+        xhr.onerror = function () {
+          console.error("Request failed");
+        };
+
+        // Send the request
+        xhr.send();
+      });
+
+    function populateDropdown(dropdownId, items) {
+      const dropdown = document.getElementById(dropdownId);
+      dropdown.innerHTML = ""; // clear existing options
+
+      items.forEach((item) => {
+        const option = document.createElement("option");
+        option.value = item;
+        option.text = item;
+        dropdown.appendChild(option);
+      });
+    }
+
+    document
+      .getElementById("submitAnswerBtn")
+      .addEventListener("click", function () {
+        const animal = document.getElementById("dropdown1").value;
+        const transport = document.getElementById("dropdown2").value;
+        const action = document.getElementById("dropdown3").value;
+        const answer = animal + ' ' + transport + ' ' + action;
+
+        if (animal == "" || transport == "" || action == "") {
+          document.getElementById("userInfo").innerHTML = "Please select all three options.";
+          return;
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        xhr.open("PATCH", "https://isa-server.azurewebsites.net/user/submit", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.setRequestHeader("Authorization", `Bearer ${20}`);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            var json = JSON.parse(xhr.responseText);
+
+            document.getElementById("lastGuess").innerHTML = "Previous Guess: " + answer;
+            document.getElementById("numCorrect").innerHTML = "Number of Correct Words: " + json.numCorrect;
+            document.getElementById("remainingTokens").innerHTML = "Remaining Tokens: " + json.remainingTokens;
+
+            if (json.numCorrect == 3) {
+              document.getElementById("userInfo").innerHTML = "You won with the correct answer: " + answer;
+              document.getElementById("submitAnswerBtn").disabled = true;
+            }
+            if (json.gameOver) {
+              document.getElementById("submitAnswerBtn").disabled = true;
+              document.getElementById("getHintBtn").disabled = true;
+              document.getElementById("userInfo").innerHTML = "No more tokens left.";
+            }
+
+          }
+        }
+        var data = JSON.stringify({ animal, transport, action });
+        xhr.send(data);
+      });
+
+    document.getElementById("getHintBtn").addEventListener("click", function () {
+      document.getElementById("getHintBtn").disabled = true;
+      var xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
+      xhr.open("GET", "https://isa-server.azurewebsites.net/user/hints", true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          var json = JSON.parse(xhr.responseText);
+          document.getElementById("hintArea").innerHTML = json.hint;
+        }
+      }
+      xhr.send();
+    });
+
+    document.getElementById("signOutBtn").addEventListener("click", function () {
+      var xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
+      xhr.open("POST", "https://isa-server.azurewebsites.net/logout", true);
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          window.location.href = "login.html"; // Redirect to login page
+        } else {
+          // Handle signout error
+          console.error("Signout failed:", xhr.statusText);
+        }
+      }
+      xhr.send();
+    });
+
+  </script>
+</body>
+
+</html>
